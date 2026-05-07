@@ -1,0 +1,33 @@
+name: MockLLM Snapshot Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  snapshot-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install -r requirements.txt
+
+      - name: Start MockLLM
+        run: |
+          source .venv/bin/activate
+          nohup python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+          sleep 5
+
+      - name: Run snapshot tests
+        run: |
+          source .venv/bin/activate
+          python -m mockllm.cli snapshot test snapshots/
