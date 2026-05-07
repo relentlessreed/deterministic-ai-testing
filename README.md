@@ -6,7 +6,7 @@
 
 ---
 
-## The problem
+# The problem
 
 AI applications are extremely difficult to test.
 
@@ -29,7 +29,7 @@ That breaks:
 
 ---
 
-## The solution
+# The solution
 
 `deterministic-ai-testing` is a local OpenAI-compatible mock server that gives you:
 
@@ -46,12 +46,29 @@ Without calling real model APIs.
 
 ---
 
-## Why developers use this
+# Why developers use this
 
 Instead of paying for real inference during tests:
 
 ```text
 frontend -> real OpenAI API
+```
+
+you can do:
+
+```text
+frontend -> deterministic-ai-testing
+```
+
+using only:
+
+```python
+base_url="http://localhost:8000/v1"
+```
+
+Everything else stays compatible.
+
+---
 
 # Snapshot Testing
 
@@ -83,8 +100,385 @@ This enables:
 
 ---
 
+# Demo
+
+## Start the server
+
+```bash
+python -m uvicorn app.main:app --reload --port 8000
+```
+
+---
+
+## Health check
+
+```bash
+curl http://localhost:8000/health
+```
+
+Expected:
+
+```json
+{"status":"ok","service":"deterministic-ai-testing"}
+```
+
+---
+
+## Chat completions
+
+```bash
+curl http://localhost:8000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-4o","messages":[{"role":"user","content":"hello"}]}'
+```
+
+Expected:
+
+```json
+{
+  "choices": [
+    {
+      "message": {
+        "content": "Hello from MockLLM. This response is deterministic."
+      }
+    }
+  ]
+}
+```
+
+---
+
+## Tool-call mocking
+
+```bash
+curl http://localhost:8000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-4o","messages":[{"role":"user","content":"please use tool"}]}'
+```
+
+Expected:
+
+```json
+{
+  "tool_calls": [
+    {
+      "function": {
+        "name": "search_docs"
+      }
+    }
+  ]
+}
+```
+
+---
+
+## Error simulation
+
+```bash
+curl http://localhost:8000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-4o","messages":[{"role":"user","content":"rate limit"}]}'
+```
+
+Expected:
+
+```json
+{
+  "detail": {
+    "error": {
+      "message": "Rate limit exceeded by mock scenario."
+    }
+  }
+}
+```
+
+---
+
+## Streaming simulation
+
+```bash
+curl http://localhost:8000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-4o","stream":true,"messages":[{"role":"user","content":"hello"}]}'
+```
+
+---
+
+## OpenAI SDK compatibility
+
+Works with the official OpenAI SDK.
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="mock-key",
+    base_url="http://localhost:8000/v1",
+)
+
+response = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[
+        {"role": "user", "content": "hello"}
+    ],
+)
+
+print(response.choices[0].message.content)
+```
+
+Run:
+
+```bash
+python3 examples/openai_sdk_example.py
+```
+
+---
+
+# 60-Second Quickstart
+
+```bash
+git clone git@github.com:relentlessreed/deterministic-ai-testing.git
+
+cd deterministic-ai-testing
+
+python3 -m venv .venv
+
+source .venv/bin/activate
+
+pip install -r requirements.txt
+
+python -m uvicorn app.main:app --reload --port 8000
+```
+
+---
+
+# Features
+
 ## OpenAI-compatible endpoints
 
 - `/v1/chat/completions`
 - `/v1/completions`
 - `/v1/embeddings`
+
+---
+
+## Deterministic scenario engine
+
+Supports:
+
+- exact matching
+- contains matching
+- regex matching
+
+---
+
+## YAML scenarios
+
+Edit:
+
+```bash
+scenarios/default.yaml
+```
+
+Example:
+
+```yaml
+- name: refund request
+  match:
+    contains: refund
+  response:
+    content: Refund approved. Your money will be returned in 3-5 business days.
+```
+
+Live edits apply immediately.
+
+No recompilation required.
+
+---
+
+## Tool-call simulation
+
+Mock:
+
+- function calls
+- tool invocations
+- agent actions
+- assistant tool responses
+
+Useful for:
+
+- agent testing
+- orchestration testing
+- frontend AI development
+
+---
+
+## Failure simulation
+
+Test:
+
+- rate limits
+- retries
+- API failures
+- fallback logic
+- degraded AI behavior
+
+---
+
+## Streaming support
+
+Simulate streaming token responses locally.
+
+Useful for:
+
+- chat UIs
+- token rendering
+- frontend streaming logic
+- websocket/SSE behavior
+
+---
+
+## Embeddings support
+
+Includes deterministic fake embeddings for:
+
+- RAG testing
+- retrieval simulation
+- vector pipeline testing
+- semantic search development
+
+---
+
+## CI-safe AI testing
+
+Run deterministic AI tests in:
+
+- GitHub Actions
+- CI/CD pipelines
+- local test suites
+
+without paying for inference.
+
+---
+
+# Testing
+
+Run all tests:
+
+```bash
+python -m pytest
+```
+
+---
+
+# Docker
+
+## Run locally
+
+```bash
+docker compose up --build
+```
+
+Then test:
+
+```bash
+curl http://localhost:8000/health
+```
+
+---
+
+# Example use cases
+
+- AI app testing
+- AI agent testing
+- LangChain testing
+- RAG testing
+- frontend AI UI development
+- CI/CD pipelines
+- retry/fallback testing
+- local AI simulation
+- offline AI development
+- deterministic regression testing
+
+---
+
+# Architecture
+
+```text
+application
+    ↓
+OpenAI SDK
+    ↓
+deterministic-ai-testing
+    ↓
+deterministic YAML scenarios
+```
+
+---
+
+# Roadmap
+
+Planned features:
+
+- snapshot diffing
+- GitHub Actions integration
+- installable CLI
+- scenario validation
+- tool-call assertions
+- agent replay
+- multi-agent workflows
+- hosted team dashboard
+
+---
+
+# Product vision
+
+This is not just an OpenAI mock server.
+
+The goal is to become:
+
+> deterministic AI testing infrastructure
+
+for the next generation of AI-native software.
+
+or:
+
+> Playwright for AI agents.
+
+---
+
+# Why this matters
+
+The next major software wave is:
+
+- AI infrastructure
+- agent orchestration
+- deterministic testing
+- AI observability
+- developer workflow acceleration
+
+AI software requires a new testing stack.
+
+This project is part of that stack.
+
+---
+
+# Contributing
+
+Contributions are welcome.
+
+Especially:
+
+- OpenAI compatibility improvements
+- snapshot testing
+- LangChain examples
+- CLI tooling
+- GitHub Actions
+- scenario validation
+- agent testing workflows
+
+---
+
+# License
+
+MIT
