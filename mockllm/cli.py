@@ -58,6 +58,7 @@ def test_snapshot_file(path: Path, base_url_override: str | None = None) -> bool
     expected_content = expected.get("content")
     expected_contains = expected.get("contains")
     expected_tool_name = expected.get("tool_name")
+    expected_tool_order = expected.get("tool_order")
 
     passed = True
 
@@ -96,6 +97,19 @@ def test_snapshot_file(path: Path, base_url_override: str | None = None) -> bool
             print(f"FAIL {path}")
             print(f"expected tool call: {expected_tool_name}")
             print(f"actual tool calls:   {tool_names}")
+
+    if expected_tool_order is not None:
+        tool_calls = response["choices"][0]["message"].get("tool_calls") or []
+        actual_order = [
+            tool_call.get("function", {}).get("name")
+            for tool_call in tool_calls
+        ]
+
+        if actual_order != expected_tool_order:
+            passed = False
+            print(f"FAIL {path}")
+            print(f"expected tool order: {expected_tool_order}")
+            print(f"actual tool order:   {actual_order}")
 
     if passed:
         print(f"PASS {path}")
