@@ -627,3 +627,29 @@ It catches:
 - scenarios that define both `response` and `error`
 
 This helps teams fail fast when test scenarios are malformed.
+
+# Multi-step workflow snapshots
+
+MockLLM can validate deterministic tool workflows inside snapshots.
+
+Example:
+
+```json
+{
+  "name": "tool-workflow",
+  "request": {
+    "model": "gpt-4o",
+    "messages": [
+      {
+        "role": "user",
+        "content": "please use tool"
+      }
+    ]
+  },
+  "expected": {
+    "tool_name": "search_docs",
+    "tool_order": [
+      "search_docs"
+    ]
+  }
+}
