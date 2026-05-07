@@ -1,0 +1,36 @@
+- name: hello
+  match:
+    contains: hello
+  response:
+    content: Hello from MockLLM. This response is deterministic.
+
+- name: refund request
+  match:
+    contains: refund
+  response:
+    content: Refund approved. Your money will be returned in 3-5 business days.
+
+- name: weather
+  match:
+    regex: "weather|forecast|temperature"
+  response:
+    content: It is sunny and 72 degrees.
+
+- name: tool call demo
+  match:
+    contains: use tool
+  response:
+    content: ""
+    tool_calls:
+      - id: call_mock_1
+        type: function
+        function:
+          name: search_docs
+          arguments: "{\"query\":\"refund policy\"}"
+
+- name: rate limit demo
+  match:
+    contains: rate limit
+  error:
+    status_code: 429
+    message: Rate limit exceeded by mock scenario.
