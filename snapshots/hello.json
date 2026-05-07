@@ -1,0 +1,37 @@
+{
+  "name": "hello",
+  "base_url": "http://localhost:8000/v1",
+  "request": {
+    "model": "gpt-4o",
+    "messages": [
+      {
+        "role": "user",
+        "content": "hello"
+      }
+    ]
+  },
+  "expected": {
+    "content": "Hello User - this mock response changed live from YAML."
+  },
+  "response": {
+    "id": "chatcmpl-mock-b7a07f2bb8e6",
+    "object": "chat.completion",
+    "created": 1778174776,
+    "model": "gpt-4o",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "Hello User - this mock response changed live from YAML."
+        },
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1,
+      "completion_tokens": 10,
+      "total_tokens": 11
+    }
+  }
+}

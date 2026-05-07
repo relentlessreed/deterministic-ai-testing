@@ -1,0 +1,37 @@
+{
+  "name": "refund",
+  "base_url": "http://localhost:8000/v1",
+  "request": {
+    "model": "gpt-4o",
+    "messages": [
+      {
+        "role": "user",
+        "content": "refund"
+      }
+    ]
+  },
+  "expected": {
+    "content": "Refund approved. Your money will be returned in 3-5 business days."
+  },
+  "response": {
+    "id": "chatcmpl-mock-1d730a6056b8",
+    "object": "chat.completion",
+    "created": 1778174787,
+    "model": "gpt-4o",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "Refund approved. Your money will be returned in 3-5 business days."
+        },
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1,
+      "completion_tokens": 11,
+      "total_tokens": 12
+    }
+  }
+}
