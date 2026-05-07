@@ -22,7 +22,6 @@ def extract_content(response: dict) -> str:
 
 def save_snapshot(args):
     path = Path(args.file)
-
     request = {
         "model": args.model,
         "messages": [{"role": "user", "content": args.prompt}],
@@ -58,21 +57,18 @@ def test_snapshot_file(path: Path, base_url_override: str | None = None) -> bool
 
     expected_content = expected.get("content")
     expected_contains = expected.get("contains")
+    expected_tool_name = expected.get("tool_name")
 
     passed = True
 
     if expected_content is not None and actual_content != expected_content:
         passed = False
-
         print(f"FAIL {path}")
         print("expected exact:")
         print(expected_content)
-
         print("actual:")
         print(actual_content)
-
         print("diff:")
-
         diff = difflib.unified_diff(
             expected_content.splitlines(),
             actual_content.splitlines(),
@@ -80,15 +76,26 @@ def test_snapshot_file(path: Path, base_url_override: str | None = None) -> bool
             tofile="actual",
             lineterm="",
         )
-
         print("\n".join(diff))
 
     if expected_contains is not None and expected_contains not in actual_content:
         passed = False
-
         print(f"FAIL {path}")
         print(f"expected contains: {expected_contains}")
         print(f"actual:            {actual_content}")
+
+    if expected_tool_name is not None:
+        tool_calls = response["choices"][0]["message"].get("tool_calls") or []
+        tool_names = [
+            tool_call.get("function", {}).get("name")
+            for tool_call in tool_calls
+        ]
+
+        if expected_tool_name not in tool_names:
+            passed = False
+            print(f"FAIL {path}")
+            print(f"expected tool call: {expected_tool_name}")
+            print(f"actual tool calls:   {tool_names}")
 
     if passed:
         print(f"PASS {path}")
@@ -98,18 +105,13 @@ def test_snapshot_file(path: Path, base_url_override: str | None = None) -> bool
 
 def test_snapshots(args):
     target = Path(args.file)
-
-    if target.is_dir():
-        files = sorted(target.glob("*.json"))
-    else:
-        files = [target]
+    files = sorted(target.glob("*.json")) if target.is_dir() else [target]
 
     if not files:
         print(f"no snapshot files found: {target}")
         return 1
 
     results = [test_snapshot_file(path, args.base_url) for path in files]
-
     return 0 if all(results) else 1
 
 
@@ -125,20 +127,16 @@ def main():
     snapshot_sub = snapshot.add_subparsers(dest="snapshot_command")
 
     save = snapshot_sub.add_parser("save")
-
     save.add_argument("file")
     save.add_argument("--prompt", required=True)
     save.add_argument("--name")
     save.add_argument("--model", default="gpt-4o")
     save.add_argument("--base-url", default=DEFAULT_BASE_URL)
-
     save.set_defaults(func=save_snapshot)
 
     test = snapshot_sub.add_parser("test")
-
     test.add_argument("file")
     test.add_argument("--base-url")
-
     test.set_defaults(func=test_snapshots)
 
     args = parser.parse_args()
@@ -148,12 +146,9 @@ def main():
         return 1
 
     result = args.func(args)
-
-    if isinstance(result, int):
-        return result
-
-    return 0
+    return result if isinstance(result, int) else 0
 
 
 if __name__ == "__main__":
     sys.exit(main())
+PY

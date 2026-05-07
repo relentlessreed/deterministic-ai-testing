@@ -1,0 +1,16 @@
+{
+  "name": "tool-call-flow",
+  "base_url": "http://localhost:8000/v1",
+  "request": {
+    "model": "gpt-4o",
+    "messages": [
+      {
+        "role": "user",
+        "content": "please use tool"
+      }
+    ]
+  },
+  "expected": {
+    "tool_name": "search_docs"
+  }
+}
