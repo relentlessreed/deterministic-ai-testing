@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "deterministic-ai-testing"
-version = "0.1.0"
+version = "0.2.0"
 description = "Deterministic OpenAI-compatible testing infrastructure for AI apps and agents."
 readme = "README.md"
 requires-python = ">=3.10"
