@@ -30,4 +30,5 @@ jobs:
       - name: Run snapshot tests
         run: |
           source .venv/bin/activate
+          export PYTHONPATH=$PYTHONPATH:.
           python -m mockllm.cli snapshot test snapshots/
