@@ -501,3 +501,17 @@ diff:
 @@ -1 +1 @@
 -BROKEN EXPECTED OUTPUT
 +Hello User - this mock response changed live from YAML.
+
+## Scenario validation
+
+MockLLM validates `scenarios/default.yaml` before using it.
+
+It catches:
+
+- missing `match`
+- missing `response` or `error`
+- invalid scenario structure
+- scenarios that define both `response` and `error`
+
+This helps teams fail fast when test scenarios are malformed.
+
