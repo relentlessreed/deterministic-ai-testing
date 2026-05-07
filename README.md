@@ -482,3 +482,22 @@ Especially:
 # License
 
 MIT
+
+## Snapshot diffs
+
+When a snapshot fails, MockLLM shows a unified diff:
+
+```text
+FAIL snapshots/hello.json
+expected exact:
+BROKEN EXPECTED OUTPUT
+
+actual:
+Hello User - this mock response changed live from YAML.
+
+diff:
+--- expected
++++ actual
+@@ -1 +1 @@
+-BROKEN EXPECTED OUTPUT
++Hello User - this mock response changed live from YAML.
