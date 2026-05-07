@@ -100,6 +100,43 @@ This enables:
 
 ---
 
+# Tool-call assertions
+
+MockLLM includes assertion helpers for deterministic agent testing.
+
+Example:
+
+```python
+from mockllm.assertions import (
+    assert_tool_called,
+    assert_tool_called_with,
+)
+
+response = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[
+        {"role": "user", "content": "find refund policy"}
+    ],
+)
+
+assert_tool_called(response, "search_docs")
+
+assert_tool_called_with(
+    response,
+    "search_docs",
+    {"query": "refund policy"},
+)
+```
+
+This enables:
+
+- deterministic AI-agent testing
+- orchestration verification
+- workflow regression testing
+- CI-safe agent assertions
+
+---
+
 # Demo
 
 ## Start the server
