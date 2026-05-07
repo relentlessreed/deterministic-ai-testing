@@ -73,3 +73,14 @@ def assert_tool_called_with(response: Any, tool_name: str, expected_arguments: d
     raise AssertionError(
         f"Expected tool call '{tool_name}', but got {names}"
     )
+
+def assert_tool_order(response: Any, expected_order: list[str]):
+    tool_calls = extract_tool_calls(response)
+    actual_order = [
+        _tool_name(tool_call)
+        for tool_call in tool_calls
+    ]
+
+    assert actual_order == expected_order, (
+        f"Expected tool order {expected_order}, but got {actual_order}"
+    )
