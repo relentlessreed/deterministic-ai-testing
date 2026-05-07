@@ -2,7 +2,7 @@
   match:
     contains: hello
   response:
-    content: Hello from MockLLM. This response is deterministic.
+    content: Hello User - this mock response changed live from YAML.
 
 - name: refund request
   match:

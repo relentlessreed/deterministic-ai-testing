@@ -20,7 +20,7 @@ def test_chat_completion_default():
 def test_chat_completion_scenario_match():
     response = client.post("/v1/chat/completions", json={"model": "gpt-4o", "messages": [{"role": "user", "content": "hello"}]})
     assert response.status_code == 200
-    assert "Hello from MockLLM" in response.json()["choices"][0]["message"]["content"]
+    assert "Hello" in response.json()["choices"][0]["message"]["content"]
 
 
 def test_tool_call_scenario():
