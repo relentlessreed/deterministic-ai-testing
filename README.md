@@ -53,3 +53,38 @@ Instead of paying for real inference during tests:
 ```text
 frontend -> real OpenAI API
 
+# Snapshot Testing
+
+Save deterministic AI outputs:
+
+```bash
+python -m mockllm.cli snapshot save snapshots/hello.json --prompt "hello"
+```
+
+Validate them later:
+
+```bash
+python -m mockllm.cli snapshot test snapshots/
+```
+
+Example output:
+
+```text
+PASS snapshots/hello.json
+PASS snapshots/refund.json
+```
+
+This enables:
+
+- deterministic regression testing
+- CI-safe AI verification
+- stable agent workflows
+- reproducible LLM behavior
+
+---
+
+## OpenAI-compatible endpoints
+
+- `/v1/chat/completions`
+- `/v1/completions`
+- `/v1/embeddings`
