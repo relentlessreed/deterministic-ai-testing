@@ -234,21 +234,92 @@ python3 examples/openai_sdk_example.py
 
 ---
 
-# 60-Second Quickstart
+## 60-Second Quickstart
+
+Install directly from PyPI:
 
 ```bash
-git clone git@github.com:relentlessreed/deterministic-ai-testing.git
+pip install deterministic-ai-testing
+```
 
-cd deterministic-ai-testing
+Start the MockLLM server:
 
-python3 -m venv .venv
-
-source .venv/bin/activate
-
-pip install -r requirements.txt
-
+```bash
 python -m uvicorn app.main:app --reload --port 8000
 ```
+
+Verify the server is running:
+
+```bash
+curl http://localhost:8000/health
+```
+
+Expected response:
+
+```json
+{
+  "status": "ok",
+  "service": "deterministic-ai-testing"
+}
+```
+
+Save a deterministic AI snapshot:
+
+```bash
+mockllm snapshot save snapshots/hello.json --prompt "hello"
+```
+
+Run snapshot tests:
+
+```bash
+mockllm snapshot test snapshots/
+```
+
+Expected output:
+
+```text
+PASS snapshots/hello.json
+PASS snapshots/refund.json
+```
+
+Run MockLLM with Docker:
+
+```bash
+docker compose up --build
+```
+
+Use with the OpenAI SDK:
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="mock-key",
+    base_url="http://localhost:8000/v1",
+)
+
+response = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[
+        {"role": "user", "content": "hello"}
+    ],
+)
+
+print(response.choices[0].message.content)
+```
+
+Example deterministic response:
+
+```text
+Hello User - this mock response changed live from YAML.
+```
+
+Run the included example:
+
+```bash
+python examples/openai_sdk_example.py
+```
+
 
 ---
 
