@@ -1,0 +1,2 @@
+[console_scripts]
+mockllm = mockllm.cli:main
