@@ -1,55 +1,55 @@
 # deterministic-ai-testing
 
-## Playwright for AI agents.
-
-Deterministic OpenAI-compatible testing infrastructure for AI apps, agents, RAG pipelines, and CI/CD.
-
-Stop paying for flaky AI tests.
+> Playwright for AI agents.
+>
+> Deterministic OpenAI-compatible testing infrastructure for AI applications, agents, and CI pipelines.
 
 ---
 
-## Why this exists
+## The problem
 
-Real LLMs make tests:
+AI applications are extremely difficult to test.
 
-- slow
-- expensive
-- flaky
+Real LLMs are:
+
 - nondeterministic
-- hard to debug
-- unsafe for CI
+- expensive
+- slow
+- flaky in CI
+- hard to reproduce
+- difficult to debug
 
-This project gives you a local OpenAI-compatible mock server with deterministic outputs.
+That breaks:
 
-Use it to test AI products without calling real model APIs.
-
----
-
-## What it supports
-
-- OpenAI-compatible `/v1/chat/completions`
-- OpenAI-compatible `/v1/completions`
-- OpenAI-compatible `/v1/embeddings`
-- YAML scenario matching
-- exact / contains / regex matching
-- streaming responses
-- tool/function-call mocks
-- error and rate-limit simulation
-- OpenAI SDK compatibility
-- Docker support
-- GitHub Actions CI
+- automated tests
+- agent workflows
+- CI/CD pipelines
+- regression testing
+- local development
 
 ---
 
-## 60-second start
+## The solution
 
-```bash
-git clone git@github.com:relentlessreed/deterministic-ai-testing.git
-cd deterministic-ai-testing
+`deterministic-ai-testing` is a local OpenAI-compatible mock server that gives you:
 
-python3 -m venv .venv
-source .venv/bin/activate
+✅ deterministic outputs  
+✅ reproducible AI tests  
+✅ local/offline development  
+✅ CI-safe LLM simulation  
+✅ programmable scenarios  
+✅ tool-call mocking  
+✅ streaming simulation  
+✅ rate-limit/error testing  
 
-pip install -r requirements.txt
+Without calling real model APIs.
 
-python -m uvicorn app.main:app --reload --port 8000
+---
+
+## Why developers use this
+
+Instead of paying for real inference during tests:
+
+```text
+frontend -> real OpenAI API
+
