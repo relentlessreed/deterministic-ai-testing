@@ -14,9 +14,9 @@
     "content": "Hello User - this mock response changed live from YAML."
   },
   "response": {
-    "id": "chatcmpl-mock-b7a07f2bb8e6",
+    "id": "chatcmpl-mock-4e14e00fa147",
     "object": "chat.completion",
-    "created": 1778174776,
+    "created": 1778175079,
     "model": "gpt-4o",
     "choices": [
       {
