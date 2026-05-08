@@ -778,3 +778,21 @@ mockllm-report.html
 ```
 
 Open it in a browser to inspect prompts, expected outputs, and recorded responses.
+
+## Retry and failure workflow testing
+
+Scenarios can model transient failures with `response_sequence`:
+
+```yaml
+- name: retry-flow
+  match:
+    contains: retry sequence
+  response_sequence:
+    - error:
+        status_code: 429
+        message: Rate limit, try again.
+    - response:
+        content: Recovered after retry.
+```
+
+Each matching request advances the sequence. After the last step, the final step is reused.

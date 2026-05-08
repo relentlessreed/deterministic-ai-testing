@@ -19,6 +19,58 @@ app = FastAPI(
 )
 
 
+SCENARIO_SEQUENCE_STATE = {}
+
+
+def scenario_key(scenario: dict) -> str:
+    return scenario.get("name") or json.dumps(scenario.get("match", {}), sort_keys=True)
+
+
+def resolve_scenario_step(scenario: dict | None) -> dict | None:
+    if not scenario:
+        return None
+
+    sequence = scenario.get("response_sequence")
+    if not sequence:
+        return scenario
+
+    key = scenario_key(scenario)
+    index = SCENARIO_SEQUENCE_STATE.get(key, 0)
+    SCENARIO_SEQUENCE_STATE[key] = index + 1
+
+    if index >= len(sequence):
+        index = len(sequence) - 1
+
+    return sequence[index]
+
+
+def raise_scenario_error(step: dict | None):
+    if step and step.get("error"):
+        error = step["error"]
+        raise HTTPException(
+            status_code=error.get("status_code", 500),
+            detail={
+                "error": {
+                    "message": error.get("message", "Mock error."),
+                    "type": "mock_error",
+                    "code": error.get("status_code", 500),
+                }
+            },
+        )
+
+
+def scenario_content_and_tools(step: dict | None):
+    content = DEFAULT_RESPONSE
+    tool_calls = None
+
+    if step and step.get("response"):
+        response = step["response"]
+        content = response.get("content", DEFAULT_RESPONSE)
+        tool_calls = response.get("tool_calls")
+
+    return content, tool_calls
+
+
 def load_scenarios():
     path = "scenarios/default.yaml"
 
@@ -51,26 +103,9 @@ async def chat_completions(request: ChatCompletionRequest):
     prompt = messages_to_prompt(request.messages)
     scenario = find_matching_scenario(prompt, scenarios)
 
-    if scenario and scenario.get("error"):
-        error = scenario["error"]
-        raise HTTPException(
-            status_code=error.get("status_code", 500),
-            detail={
-                "error": {
-                    "message": error.get("message", "Mock error."),
-                    "type": "mock_error",
-                    "code": error.get("status_code", 500),
-                }
-            },
-        )
-
-    content = DEFAULT_RESPONSE
-    tool_calls = None
-
-    if scenario and scenario.get("response"):
-        response = scenario["response"]
-        content = response.get("content", DEFAULT_RESPONSE)
-        tool_calls = response.get("tool_calls")
+    step = resolve_scenario_step(scenario)
+    raise_scenario_error(step)
+    content, tool_calls = scenario_content_and_tools(step)
 
     if request.stream:
         return StreamingResponse(
@@ -127,23 +162,9 @@ async def completions(request: CompletionRequest):
     prompt = request.prompt if isinstance(request.prompt, str) else json.dumps(request.prompt)
     scenario = find_matching_scenario(prompt, scenarios)
 
-    if scenario and scenario.get("error"):
-        error = scenario["error"]
-        raise HTTPException(
-            status_code=error.get("status_code", 500),
-            detail={
-                "error": {
-                    "message": error.get("message", "Mock error."),
-                    "type": "mock_error",
-                    "code": error.get("status_code", 500),
-                }
-            },
-        )
-
-    content = DEFAULT_RESPONSE
-
-    if scenario and scenario.get("response"):
-        content = scenario["response"].get("content", DEFAULT_RESPONSE)
+    step = resolve_scenario_step(scenario)
+    raise_scenario_error(step)
+    content, _ = scenario_content_and_tools(step)
 
     if request.stream:
         return StreamingResponse(
@@ -211,23 +232,9 @@ async def responses(request: ResponsesRequest):
     prompt = responses_input_to_prompt(request.input)
     scenario = find_matching_scenario(prompt, scenarios)
 
-    if scenario and scenario.get("error"):
-        error = scenario["error"]
-        raise HTTPException(
-            status_code=error.get("status_code", 500),
-            detail={
-                "error": {
-                    "message": error.get("message", "Mock error."),
-                    "type": "mock_error",
-                    "code": error.get("status_code", 500),
-                }
-            },
-        )
-
-    content = DEFAULT_RESPONSE
-
-    if scenario and scenario.get("response"):
-        content = scenario["response"].get("content", DEFAULT_RESPONSE)
+    step = resolve_scenario_step(scenario)
+    raise_scenario_error(step)
+    content, _ = scenario_content_and_tools(step)
 
     return responses_response(request.model, content)
 
