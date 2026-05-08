@@ -653,3 +653,42 @@ Example:
     ]
   }
 }
+
+## LangChain integration
+
+`deterministic-ai-testing` works with LangChain through the OpenAI-compatible chat completions API.
+
+Install the LangChain OpenAI adapter:
+
+```bash
+pip install langchain-openai
+```
+
+Start the mock server:
+
+```bash
+uvicorn app.main:app --reload --port 8000
+```
+
+Run the example:
+
+```bash
+python examples/langchain_example.py
+```
+
+Example:
+
+```python
+from langchain_openai import ChatOpenAI
+
+llm = ChatOpenAI(
+    model="gpt-4o",
+    api_key="mock-key",
+    base_url="http://localhost:8000/v1",
+)
+
+response = llm.invoke("hello")
+print(response.content)
+```
+
+The request is routed to the local mock server at `/v1/chat/completions`, making LangChain workflows deterministic and testable.
