@@ -720,3 +720,23 @@ curl -s http://127.0.0.1:8000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{"model":"gpt-4o","messages":[{"role":"user","content":"hello"}]}' | python -m json.tool
 ```
+
+## CLI server
+
+Start the local mock server with:
+
+```bash
+mockllm serve
+```
+
+Use a custom host or port:
+
+```bash
+mockllm serve --host 0.0.0.0 --port 8000
+```
+
+Enable reload during development:
+
+```bash
+mockllm serve --reload
+```
