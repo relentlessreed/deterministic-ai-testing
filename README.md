@@ -762,3 +762,19 @@ Then start the mock server:
 ```bash
 mockllm serve
 ```
+
+## HTML snapshot reports
+
+Generate a static HTML report for snapshots:
+
+```bash
+mockllm snapshot report snapshots
+```
+
+This creates:
+
+```text
+mockllm-report.html
+```
+
+Open it in a browser to inspect prompts, expected outputs, and recorded responses.
