@@ -48,8 +48,14 @@ def test_snapshot_file(path: Path, base_url_override: str | None = None) -> bool
     actual_content = extract_content(response)
 
     expected_content = expected.get("content")
+    expected_contains = expected.get("contains")
+    expected_tool_name = expected.get("tool_name")
+    expected_tool_order = expected.get("tool_order")
 
-    if expected_content != actual_content:
+    passed = True
+
+    if expected_content is not None and actual_content != expected_content:
+        passed = False
         print(f"FAIL {path}")
 
         github_error(
@@ -58,10 +64,11 @@ def test_snapshot_file(path: Path, base_url_override: str | None = None) -> bool
             "Expected content did not match actual response",
         )
 
-        print("expected:")
+        print("expected exact:")
         print(expected_content)
         print("actual:")
         print(actual_content)
+        print("diff:")
 
         diff = difflib.unified_diff(
             expected_content.splitlines(),
@@ -72,10 +79,59 @@ def test_snapshot_file(path: Path, base_url_override: str | None = None) -> bool
         )
 
         print("\n".join(diff))
-        return False
 
-    print(f"PASS {path}")
-    return True
+    if expected_contains is not None and expected_contains not in actual_content:
+        passed = False
+        print(f"FAIL {path}")
+
+        github_error(
+            path,
+            "Snapshot Contains Mismatch",
+            f"Expected response to contain: {expected_contains}",
+        )
+
+        print(f"expected contains: {expected_contains}")
+        print(f"actual:            {actual_content}")
+
+    tool_calls = response["choices"][0]["message"].get("tool_calls") or []
+    tool_names = [
+        tool_call.get("function", {}).get("name")
+        for tool_call in tool_calls
+    ]
+
+    if expected_tool_name is not None and expected_tool_name not in tool_names:
+        passed = False
+        print(f"FAIL {path}")
+
+        github_error(
+            path,
+            "Snapshot Tool Call Mismatch",
+            f"Expected tool call: {expected_tool_name}",
+        )
+
+        print(f"expected tool call: {expected_tool_name}")
+        print(f"actual tool calls:   {tool_names}")
+
+    if expected_tool_order is not None:
+        actual_order = tool_names
+
+        if actual_order != expected_tool_order:
+            passed = False
+            print(f"FAIL {path}")
+
+            github_error(
+                path,
+                "Snapshot Tool Order Mismatch",
+                "Tool call order did not match expected order",
+            )
+
+            print(f"expected tool order: {expected_tool_order}")
+            print(f"actual tool order:   {actual_order}")
+
+    if passed:
+        print(f"PASS {path}")
+
+    return passed
 
 
 def test_snapshots(args):
