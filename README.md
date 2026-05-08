@@ -740,3 +740,25 @@ Enable reload during development:
 ```bash
 mockllm serve --reload
 ```
+
+## Project initialization
+
+Create a starter deterministic AI testing project with:
+
+```bash
+mockllm init
+```
+
+This creates:
+
+```text
+scenarios/default.yaml
+snapshots/
+tests/test_ai.py
+```
+
+Then start the mock server:
+
+```bash
+mockllm serve
+```
