@@ -1,7 +1,9 @@
 import argparse
 import difflib
 import json
+import os
 import sys
+import webbrowser
 from pathlib import Path
 
 import httpx
@@ -239,6 +241,91 @@ def replay_conversation(args):
         print()
 
 
+
+
+def dashboard(args):
+    snapshots_dir = Path("snapshots")
+    state_dir = Path("state")
+
+    snapshot_files = sorted(snapshots_dir.glob("*.json"))
+    state_files = sorted(state_dir.glob("*.json")) if state_dir.exists() else []
+
+    snapshot_items = "".join(
+        f"<li>{path.name}</li>"
+        for path in snapshot_files
+    )
+
+    state_items = "".join(
+        f"<li>{path.name}</li>"
+        for path in state_files
+    )
+
+    html = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>mockllm dashboard</title>
+
+    <style>
+        body {{
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            margin: 40px;
+        }}
+
+        .card {{
+            background: white;
+            border-radius: 10px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }}
+
+        h1 {{
+            margin-bottom: 32px;
+        }}
+
+        ul {{
+            padding-left: 20px;
+        }}
+
+        li {{
+            margin-bottom: 8px;
+        }}
+    </style>
+</head>
+<body>
+
+    <h1>mockllm dashboard</h1>
+
+    <div class="card">
+        <h2>Snapshots</h2>
+        <ul>
+            {snapshot_items or "<li>No snapshots found</li>"}
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2>State snapshots</h2>
+        <ul>
+            {state_items or "<li>No state snapshots found</li>"}
+        </ul>
+    </div>
+
+</body>
+</html>
+"""
+
+    output = Path("mockllm-dashboard.html")
+    output.write_text(html)
+
+    print(f"generated dashboard: {output}")
+
+    if args.open:
+        webbrowser.open(output.resolve().as_uri())
+
+
 def generate_html_report(args):
     target = Path(args.file)
     files = sorted(target.glob("*.json")) if target.is_dir() else [target]
@@ -402,6 +489,10 @@ def main():
     state_test.add_argument("file")
     state_test.add_argument("--json", required=True)
     state_test.set_defaults(func=test_state_snapshot)
+
+    dashboard_parser = subparsers.add_parser("dashboard")
+    dashboard_parser.add_argument("--open", action="store_true")
+    dashboard_parser.set_defaults(func=dashboard)
 
     replay_parser = subparsers.add_parser("replay")
     replay_parser.add_argument("file")
