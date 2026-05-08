@@ -692,3 +692,31 @@ print(response.content)
 ```
 
 The request is routed to the local mock server at `/v1/chat/completions`, making LangChain workflows deterministic and testable.
+
+## Docker
+
+Run the mock server with Docker:
+
+```bash
+docker run --rm -p 8000:8000 ghcr.io/relentlessreed/deterministic-ai-testing:latest
+```
+
+Verify the server is running:
+
+```bash
+curl http://127.0.0.1:8000/health
+```
+
+Expected response:
+
+```json
+{"status":"ok","service":"deterministic-ai-testing"}
+```
+
+Send a mock chat completion request:
+
+```bash
+curl -s http://127.0.0.1:8000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-4o","messages":[{"role":"user","content":"hello"}]}' | python -m json.tool
+```

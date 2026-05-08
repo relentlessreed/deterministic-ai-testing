@@ -1,0 +1,12 @@
+.git
+.venv
+__pycache__
+.pytest_cache
+*.pyc
+build
+dist
+deterministic_ai_testing.egg-info
+snapshots
+node_modules
+examples/**/node_modules
+examples/**/.venv
