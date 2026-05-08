@@ -1,0 +1,13 @@
+{
+  "model": "gpt-4o",
+  "messages": [
+    {
+      "role": "user",
+      "content": "hello"
+    },
+    {
+      "role": "user",
+      "content": "please use tool"
+    }
+  ]
+}

@@ -136,6 +136,57 @@ def test_snapshots(args):
 
 
 
+
+
+def replay_conversation(args):
+    path = Path(args.file)
+
+    if not path.exists():
+        print(f"conversation file not found: {path}")
+        return 1
+
+    conversation = json.loads(path.read_text())
+
+    model = conversation.get("model", "gpt-4o")
+    messages = conversation.get("messages", [])
+
+    if not messages:
+        print("no messages found")
+        return 1
+
+    for index, message in enumerate(messages, start=1):
+        request = {
+            "model": model,
+            "messages": [message],
+        }
+
+        print(f"--- message {index} ---")
+        print(f"user: {message.get('content', '')}")
+
+        response = post_chat(args.base_url, request)
+
+        assistant = (
+            response["choices"][0]["message"]
+            .get("content") or ""
+        )
+
+        if assistant:
+            print(f"assistant: {assistant}")
+
+        tool_calls = (
+            response["choices"][0]["message"]
+            .get("tool_calls") or []
+        )
+
+        if tool_calls:
+            print("tool calls:")
+            for tool_call in tool_calls:
+                name = tool_call.get("function", {}).get("name")
+                print(f"  - {name}")
+
+        print()
+
+
 def generate_html_report(args):
     target = Path(args.file)
     files = sorted(target.glob("*.json")) if target.is_dir() else [target]
@@ -285,6 +336,11 @@ def main():
 
     init_parser = subparsers.add_parser("init")
     init_parser.set_defaults(func=init_project)
+
+    replay_parser = subparsers.add_parser("replay")
+    replay_parser.add_argument("file")
+    replay_parser.add_argument("--base-url", default=DEFAULT_BASE_URL)
+    replay_parser.set_defaults(func=replay_conversation)
 
     serve_parser = subparsers.add_parser("serve")
     serve_parser.add_argument("--host", default="127.0.0.1")
