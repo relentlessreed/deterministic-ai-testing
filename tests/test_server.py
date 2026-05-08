@@ -74,3 +74,63 @@ def test_responses_api_scenario_match():
 
     assert "Hello" in body["output_text"]
     assert body["output"][0]["role"] == "assistant"
+
+
+def test_chat_completion_response_sequence_retry_flow(monkeypatch):
+    import app.main as main_module
+
+    main_module.SCENARIO_SEQUENCE_STATE.clear()
+
+    monkeypatch.setattr(
+        main_module,
+        "load_scenarios",
+        lambda: [
+            {
+                "name": "retry-flow",
+                "match": {"contains": "retry sequence"},
+                "response_sequence": [
+                    {
+                        "error": {
+                            "status_code": 429,
+                            "message": "Rate limit, try again.",
+                        }
+                    },
+                    {
+                        "response": {
+                            "content": "Recovered after retry.",
+                        }
+                    },
+                ],
+            }
+        ],
+    )
+
+    first = client.post(
+        "/v1/chat/completions",
+        json={
+            "model": "gpt-4o",
+            "messages": [{"role": "user", "content": "retry sequence"}],
+        },
+    )
+
+    second = client.post(
+        "/v1/chat/completions",
+        json={
+            "model": "gpt-4o",
+            "messages": [{"role": "user", "content": "retry sequence"}],
+        },
+    )
+
+    third = client.post(
+        "/v1/chat/completions",
+        json={
+            "model": "gpt-4o",
+            "messages": [{"role": "user", "content": "retry sequence"}],
+        },
+    )
+
+    assert first.status_code == 429
+    assert second.status_code == 200
+    assert second.json()["choices"][0]["message"]["content"] == "Recovered after retry."
+    assert third.status_code == 200
+    assert third.json()["choices"][0]["message"]["content"] == "Recovered after retry."
