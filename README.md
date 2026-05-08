@@ -796,3 +796,25 @@ Scenarios can model transient failures with `response_sequence`:
 ```
 
 Each matching request advances the sequence. After the last step, the final step is reused.
+
+## Conversation replay
+
+Replay a conversation file against the local mock server:
+
+```bash
+mockllm replay examples/replay/conversation.json
+```
+
+Example conversation file:
+
+```json
+{
+  "model": "gpt-4o",
+  "messages": [
+    {"role": "user", "content": "hello"},
+    {"role": "user", "content": "please use tool"}
+  ]
+}
+```
+
+Replay sends each message to the mock server and prints deterministic assistant responses and tool calls.
