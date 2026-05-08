@@ -52,3 +52,13 @@ class Scenario(BaseModel):
     match: ScenarioMatch = Field(default_factory=ScenarioMatch)
     response: Optional[ScenarioResponse] = None
     error: Optional[ScenarioError] = None
+
+
+class ResponsesRequest(BaseModel):
+    model: str = "gpt-4o"
+    input: Any
+    stream: bool = False
+    temperature: Optional[float] = None
+    max_output_tokens: Optional[int] = None
+    tools: Optional[List[Dict[str, Any]]] = None
+    tool_choice: Optional[Any] = None

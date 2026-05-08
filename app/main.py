@@ -6,8 +6,8 @@ import uuid
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 
-from app.models import ChatCompletionRequest, CompletionRequest, EmbeddingsRequest
-from app.openai_compat import chat_completion_response, completion_response, embeddings_response
+from app.models import ChatCompletionRequest, CompletionRequest, EmbeddingsRequest, ResponsesRequest
+from app.openai_compat import chat_completion_response, completion_response, embeddings_response, responses_response
 from app.scenarios import DEFAULT_RESPONSE, find_matching_scenario, messages_to_prompt
 from app.validation import validate_scenarios_file
 
@@ -15,7 +15,7 @@ from app.validation import validate_scenarios_file
 app = FastAPI(
     title="Deterministic AI Testing",
     description="OpenAI-compatible mock LLM server for deterministic AI testing.",
-    version="0.1.0",
+    version="0.2.0",
 )
 
 
@@ -177,6 +177,59 @@ async def stream_completion_response(model: str, content: str):
         await asyncio.sleep(0.02)
 
     yield "data: [DONE]\n\n"
+
+
+def responses_input_to_prompt(input_value):
+    if isinstance(input_value, str):
+        return input_value
+
+    if isinstance(input_value, list):
+        parts = []
+        for item in input_value:
+            if isinstance(item, dict):
+                content = item.get("content")
+                if isinstance(content, str):
+                    parts.append(content)
+                elif isinstance(content, list):
+                    for block in content:
+                        if isinstance(block, dict):
+                            text = block.get("text")
+                            if text:
+                                parts.append(str(text))
+                else:
+                    parts.append(json.dumps(item))
+            else:
+                parts.append(str(item))
+        return "\n".join(parts)
+
+    return json.dumps(input_value)
+
+
+@app.post("/v1/responses")
+async def responses(request: ResponsesRequest):
+    scenarios = load_scenarios()
+    prompt = responses_input_to_prompt(request.input)
+    scenario = find_matching_scenario(prompt, scenarios)
+
+    if scenario and scenario.get("error"):
+        error = scenario["error"]
+        raise HTTPException(
+            status_code=error.get("status_code", 500),
+            detail={
+                "error": {
+                    "message": error.get("message", "Mock error."),
+                    "type": "mock_error",
+                    "code": error.get("status_code", 500),
+                }
+            },
+        )
+
+    content = DEFAULT_RESPONSE
+
+    if scenario and scenario.get("response"):
+        content = scenario["response"].get("content", DEFAULT_RESPONSE)
+
+    return responses_response(request.model, content)
 
 
 @app.post("/v1/embeddings")
