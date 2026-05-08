@@ -834,3 +834,19 @@ mockllm state test state/current.json --json '{"step":"payment","memory":{"user_
 ```
 
 State snapshot diffs show expected and actual JSON when workflow state changes.
+
+## Local dashboard
+
+Generate a local dashboard for snapshots and state snapshots:
+
+```bash
+mockllm dashboard
+```
+
+This creates:
+
+```text
+mockllm-dashboard.html
+```
+
+Open it in a browser to inspect available snapshot and state snapshot files.
