@@ -15,7 +15,7 @@ from app.validation import validate_scenarios_file
 app = FastAPI(
     title="Deterministic AI Testing",
     description="OpenAI-compatible mock LLM server for deterministic AI testing.",
-    version="0.2.0",
+    version="0.3.0",
 )
 
 

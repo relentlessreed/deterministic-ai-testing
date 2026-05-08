@@ -850,3 +850,28 @@ mockllm-dashboard.html
 ```
 
 Open it in a browser to inspect available snapshot and state snapshot files.
+
+## v0.3.0 quickstart
+
+```bash
+pip install deterministic-ai-testing
+mockllm init
+mockllm serve
+```
+
+In another terminal:
+
+```bash
+mockllm snapshot save snapshots/hello.json --prompt "hello"
+mockllm snapshot test snapshots
+mockllm snapshot report snapshots
+mockllm dashboard
+```
+
+Additional workflows:
+
+```bash
+mockllm replay examples/replay/conversation.json
+mockllm state save state/current.json --name checkout-agent --json '{"step":"payment"}'
+mockllm state test state/current.json --json '{"step":"payment"}'
+```
