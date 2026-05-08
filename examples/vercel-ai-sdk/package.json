@@ -1,0 +1,13 @@
+{
+  "name": "deterministic-ai-testing-vercel-ai-sdk-example",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node example.mjs"
+  },
+  "dependencies": {
+    "ai": "latest",
+    "@ai-sdk/openai-compatible": "latest"
+  }
+}
