@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 
 import httpx
+import uvicorn
 
 DEFAULT_BASE_URL = "http://localhost:8000/v1"
 
@@ -129,6 +130,17 @@ def test_snapshots(args):
     return 0 if all(results) else 1
 
 
+
+
+def serve(args):
+    uvicorn.run(
+        "app.main:app",
+        host=args.host,
+        port=args.port,
+        reload=args.reload,
+    )
+
+
 def main():
     parser = argparse.ArgumentParser(
         prog="mockllm",
@@ -136,6 +148,12 @@ def main():
     )
 
     subparsers = parser.add_subparsers(dest="command")
+
+    serve_parser = subparsers.add_parser("serve")
+    serve_parser.add_argument("--host", default="127.0.0.1")
+    serve_parser.add_argument("--port", type=int, default=8000)
+    serve_parser.add_argument("--reload", action="store_true")
+    serve_parser.set_defaults(func=serve)
 
     snapshot = subparsers.add_parser("snapshot")
     snapshot_sub = snapshot.add_subparsers(dest="snapshot_command")
