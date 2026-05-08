@@ -134,3 +134,27 @@ def test_chat_completion_response_sequence_retry_flow(monkeypatch):
     assert second.json()["choices"][0]["message"]["content"] == "Recovered after retry."
     assert third.status_code == 200
     assert third.json()["choices"][0]["message"]["content"] == "Recovered after retry."
+
+
+def test_response_sequence_scenario_validation(tmp_path):
+    from app.validation import validate_scenarios_file
+
+    scenario_file = tmp_path / "scenarios.yaml"
+    scenario_file.write_text(
+        """
+- name: retry-flow
+  match:
+    contains: retry sequence
+  response_sequence:
+    - error:
+        status_code: 429
+        message: Rate limit, try again.
+    - response:
+        content: Recovered after retry.
+"""
+    )
+
+    scenarios = validate_scenarios_file(str(scenario_file))
+
+    assert scenarios[0]["name"] == "retry-flow"
+    assert len(scenarios[0]["response_sequence"]) == 2
