@@ -818,3 +818,19 @@ Example conversation file:
 ```
 
 Replay sends each message to the mock server and prints deterministic assistant responses and tool calls.
+
+## Memory and state snapshots
+
+Save a workflow or agent state snapshot:
+
+```bash
+mockllm state save state/current.json --name checkout-agent --json '{"step":"payment","memory":{"user_intent":"refund"}}'
+```
+
+Validate current state against a saved snapshot:
+
+```bash
+mockllm state test state/current.json --json '{"step":"payment","memory":{"user_intent":"refund"}}'
+```
+
+State snapshot diffs show expected and actual JSON when workflow state changes.

@@ -138,6 +138,58 @@ def test_snapshots(args):
 
 
 
+
+
+def save_state_snapshot(args):
+    path = Path(args.file)
+
+    state = json.loads(args.json)
+
+    snapshot = {
+        "name": args.name or path.stem,
+        "state": state,
+    }
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(snapshot, indent=2) + "\n")
+
+    print(f"saved state snapshot: {path}")
+
+
+def test_state_snapshot(args):
+    path = Path(args.file)
+
+    if not path.exists():
+        print(f"state snapshot not found: {path}")
+        return 1
+
+    snapshot = json.loads(path.read_text())
+
+    expected_state = snapshot.get("state", {})
+    actual_state = json.loads(args.json)
+
+    if expected_state != actual_state:
+        print(f"FAIL {path}")
+        print("expected:")
+        print(json.dumps(expected_state, indent=2))
+        print("actual:")
+        print(json.dumps(actual_state, indent=2))
+
+        diff = difflib.unified_diff(
+            json.dumps(expected_state, indent=2).splitlines(),
+            json.dumps(actual_state, indent=2).splitlines(),
+            fromfile="expected",
+            tofile="actual",
+            lineterm="",
+        )
+
+        print("\n".join(diff))
+        return 1
+
+    print(f"PASS {path}")
+    return 0
+
+
 def replay_conversation(args):
     path = Path(args.file)
 
@@ -336,6 +388,20 @@ def main():
 
     init_parser = subparsers.add_parser("init")
     init_parser.set_defaults(func=init_project)
+
+    state_parser = subparsers.add_parser("state")
+    state_sub = state_parser.add_subparsers(dest="state_command")
+
+    state_save = state_sub.add_parser("save")
+    state_save.add_argument("file")
+    state_save.add_argument("--name")
+    state_save.add_argument("--json", required=True)
+    state_save.set_defaults(func=save_state_snapshot)
+
+    state_test = state_sub.add_parser("test")
+    state_test.add_argument("file")
+    state_test.add_argument("--json", required=True)
+    state_test.set_defaults(func=test_state_snapshot)
 
     replay_parser = subparsers.add_parser("replay")
     replay_parser.add_argument("file")
