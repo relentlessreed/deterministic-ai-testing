@@ -52,3 +52,34 @@ def embeddings_response(model: str, input_value) -> Dict[str, Any]:
         ],
         "usage": {"prompt_tokens": len(inputs), "total_tokens": len(inputs)},
     }
+
+
+def responses_response(model: str, content: str) -> Dict[str, Any]:
+    return {
+        "id": f"resp-mock-{uuid.uuid4().hex[:12]}",
+        "object": "response",
+        "created_at": int(time.time()),
+        "status": "completed",
+        "model": model,
+        "output": [
+            {
+                "id": f"msg-mock-{uuid.uuid4().hex[:12]}",
+                "type": "message",
+                "status": "completed",
+                "role": "assistant",
+                "content": [
+                    {
+                        "type": "output_text",
+                        "text": content,
+                        "annotations": [],
+                    }
+                ],
+            }
+        ],
+        "output_text": content,
+        "usage": {
+            "input_tokens": 1,
+            "output_tokens": len(content.split()) if content else 0,
+            "total_tokens": 1 + (len(content.split()) if content else 0),
+        },
+    }
